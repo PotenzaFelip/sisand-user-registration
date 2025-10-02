@@ -1,0 +1,27 @@
+Arquivos de Build Binários
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+
+Pastas e Arquivos de Configuração Local do Visual Studio
+.vs/
+*.sln.ide
+*.suo
+*.user
+
+Pacotes NuGet
+[Pp]ackages/
+*.nupkg
+
+Arquivos de Usuário e Cache
+Arquivos de cache do editor de códigos, etc.
+*.[Cc]ode[Ss]nippet
+project.fragment.lock.json
+project.lock.json
+
+Logs
+*.log
+
+Windows
+Thumbs.db

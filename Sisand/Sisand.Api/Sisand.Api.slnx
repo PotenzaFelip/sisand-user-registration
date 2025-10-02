@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="Sisand.Api/Sisand.Api.csproj" />
+  <Project Path="Sisand.Data/Sisand.Data.csproj" />
+  <Project Path="Sisand.Domain/Sisand.Domain.csproj" />
+  <Project Path="Sisand.infrastructure/Sisand.infrastructure.csproj" />
+</Solution>
