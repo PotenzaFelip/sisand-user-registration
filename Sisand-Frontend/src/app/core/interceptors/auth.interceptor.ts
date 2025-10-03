@@ -11,7 +11,6 @@ export class AuthInterceptor implements HttpInterceptor {
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     const token = this.authService.getToken();
 
-    // Se o token existir, clona a requisição e adiciona o cabeçalho Authorization
     if (token) {
       request = request.clone({
         setHeaders: {
@@ -19,8 +18,6 @@ export class AuthInterceptor implements HttpInterceptor {
         }
       });
     }
-
-    // Continua com a requisição modificada (ou original, se não houver token)
     return next.handle(request);
   }
 }

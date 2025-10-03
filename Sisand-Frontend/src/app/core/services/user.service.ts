@@ -1,66 +1,88 @@
 import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
-import { User } from '../models/user.model';
+import { HttpClient } from '@angular/common/http';
+import { Observable, throwError, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 
-// Definição da interface do payload de criação/edição (inclui senha opcional)
+import { User } from '../models/user.model'; 
+import { environment } from '../../../environments/environment'; 
+
+export interface UserFilter {
+  username?: string;
+}
+
 export interface UserPayload {
-  id?: number;
-  username: string;
-  password?: string; // Opcional na edição
-  isAdmin: boolean;
+    username: string;
+    email: string;
+    password?: string;
+    isAdmin?: boolean; 
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class UserService {
-  // Simulação do nosso banco de dados
-  private users: User[] = [
-    { id: 1, username: 'admin', isAdmin: true },
-    { id: 2, username: 'joao', isAdmin: false },
-  ];
-  private nextId = 3;
+  private readonly USER_API_URL = `${environment.apiUrl}/Users`;
 
-  getAll(): Observable<User[]> {
-    return of(this.users.map(u => ({...u}))); // Retorna uma cópia para evitar alteração direta
+  constructor(private http: HttpClient) { } 
+
+  search(filters: UserFilter): Observable<User[]> {
+    const username = filters.username;
+
+    if (username) {
+      return this.http.get<User>(`${this.USER_API_URL}/By/${username}`).pipe(
+        map(user => user ? [user] : []),
+        catchError(error => {
+          if (error.status === 404) {
+             console.log(`Usuário '${username}' não encontrado.`);
+             return of([]);
+          }
+          console.error('Erro ao buscar usuário no backend:', error);
+          return throwError(() => new Error('Falha na comunicação com o servidor.'));
+        })
+      );
+    } else {
+      return this.http.get<User[]>(this.USER_API_URL).pipe(
+        catchError(error => {
+          console.error('Erro ao listar todos os usuários:', error);
+          return throwError(() => new Error('Falha na listagem de usuários.'));
+        })
+      );
+    }
   }
 
-  // --- CREATE ---
+  getUserById(id: number): Observable<User> {
+    return this.http.get<User>(`${this.USER_API_URL}/${id}`).pipe(
+      catchError(error => {
+        console.error(`Erro ao buscar usuário ${id}:`, error);
+        return throwError(() => new Error(`Usuário ${id} não encontrado.`));
+      })
+    );
+  }
+
   create(payload: UserPayload): Observable<User> {
-    const newUser: User = {
-      id: this.nextId++,
-      username: payload.username,
-      isAdmin: payload.isAdmin,
-      // Nota: A senha (password) não é armazenada na interface 'User' de front-end
-    };
-    this.users.push(newUser);
-    return of(newUser);
+    return this.http.post<User>(this.USER_API_URL, payload).pipe(
+      catchError(error => {
+        console.error('Erro ao criar usuário:', error);
+        return throwError(() => new Error('Falha ao tentar criar novo usuário.'));
+      })
+    );
   }
 
-  // --- UPDATE ---
   update(id: number, payload: UserPayload): Observable<User> {
-    const index = this.users.findIndex(u => u.id === id);
-    if (index > -1) {
-      const updatedUser: User = {
-        ...this.users[index],
-        username: payload.username,
-        isAdmin: payload.isAdmin,
-        // Senha não é atualizada aqui, seria feita em um endpoint separado no backend
-      };
-      this.users[index] = updatedUser;
-      return of(updatedUser);
-    }
-    throw new Error('Usuário não encontrado');
+    return this.http.put<User>(`${this.USER_API_URL}/${id}`, payload).pipe(
+      catchError(error => {
+        console.error(`Erro ao atualizar usuário ${id}:`, error);
+        return throwError(() => new Error('Falha ao tentar atualizar o usuário.'));
+      })
+    );
   }
 
-  // --- DELETE ---
   delete(id: number): Observable<void> {
-    const initialLength = this.users.length;
-    this.users = this.users.filter(u => u.id !== id);
-
-    if (this.users.length === initialLength) {
-      // throw new Error('Usuário não encontrado para exclusão'); // Em um ambiente real
-    }
-    return of(undefined);
+    return this.http.delete<void>(`${this.USER_API_URL}/${id}`).pipe(
+      catchError(error => {
+        console.error(`Erro ao deletar usuário ${id}:`, error);
+        return throwError(() => new Error('Falha ao tentar deletar o usuário.'));
+      })
+    );
   }
 }

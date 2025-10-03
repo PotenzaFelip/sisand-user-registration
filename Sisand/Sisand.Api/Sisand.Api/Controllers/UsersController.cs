@@ -3,6 +3,7 @@ using Sisand.Domain;
 using Sisand.Domain.interfaces;
 using Sisand.Domain.DTO;
 using Microsoft.AspNetCore.Authorization;
+using Sisand.Domain.PasswordHash;
 
 [Authorize]
 [ApiController]
@@ -25,16 +26,23 @@ public class UsersController : ControllerBase
         var user = await _repo.GetUserByIdAsync(id);
         return user == null ? NotFound() : Ok(user);
     }
+    [HttpGet("By/{username}")]
+    public async Task<IActionResult> GetByUsername(string username)
+    {
+        var user = await _repo.GetUserByUsernameAsync(username);
+        return user == null ? NotFound() : Ok(user);
+    }
 
     [AllowAnonymous]
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateUserDTO dto)
     {
+        var hashedPassword = PasswordHasher.HashPassword(dto.Password);
         var user = new User
         {
             Username = dto.Username,
-            PasswordHash = dto.PasswordHash,
-            PasswordSalt = dto.PasswordSalt,
+            PasswordHash = hashedPassword,
+            PasswordSalt = "Static",
             Email = dto.Email,
             CreatedAt = DateTime.UtcNow
         };
@@ -46,11 +54,12 @@ public class UsersController : ControllerBase
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(int id, CreateUserDTO dto)
     {
+        var hashedPassword = PasswordHasher.HashPassword(dto.Password);
         var user = new User
         {
             Username = dto.Username,
-            PasswordHash = dto.PasswordHash,
-            PasswordSalt = dto.PasswordSalt,
+            PasswordHash = hashedPassword,
+            PasswordSalt = "Static",
             Email = dto.Email,
         };
         await _repo.UpdateAsync(id, user);

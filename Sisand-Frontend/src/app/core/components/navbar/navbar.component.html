@@ -1,0 +1,34 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+    <div class="container-fluid">
+        <a class="navbar-brand" routerLink="/users">SISAND CRM</a>
+
+        <div class="d-flex align-items-center">
+
+            <div class="dropdown">
+                <button class="btn btn-info rounded-circle p-3 d-flex justify-content-center align-items-center" 
+                          type="button" 
+                          id="dropdownUser"
+                          data-bs-toggle="dropdown" 
+                          aria-expanded="false">
+                     <i class="bi bi-person-fill fs-4"></i>
+                </button>
+
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownUser">
+
+                    <li>
+                        <h6 class="dropdown-header">{{ username }}</h6>
+                    </li>
+                    <li>
+                        <hr class="dropdown-divider">
+                    </li>
+
+                    <li>
+                        <a class="dropdown-item" href="#" (click)="logout()">
+                            <i class="bi bi-box-arrow-right"></i> Sair
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav>

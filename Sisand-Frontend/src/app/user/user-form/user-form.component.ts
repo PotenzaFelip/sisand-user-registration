@@ -1,78 +1,127 @@
-import { Component, OnInit, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { User } from '../../core/models/user.model';
-import { UserService } from '../../core/services/user.service';
 
+
+import { Component, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
+import { UserService } from '../../core/services/user.service';
+import { UserPayload } from '../../core/services/user.service';
+import { User } from '../../core/models/user.model'; 
+import { switchMap } from 'rxjs/operators';
+import { of } from 'rxjs';
 
 @Component({
   selector: 'app-user-form',
+  standalone: false,
   templateUrl: './user-form.component.html',
-  standalone:false,
   styleUrls: ['./user-form.component.css']
 })
-export class UserFormComponent implements OnInit, OnChanges {
-  // Recebe o usuário (null para criar, User para editar)
-  @Input() user: User | null = null;
-  // Emite o evento quando o formulário é salvo
-  @Output() userSaved = new EventEmitter<void>();
-
+export class UserFormComponent implements OnInit {
   userForm!: FormGroup;
+  isEditMode: boolean = false;
+  userId: number | null = null;
+  successMessage: string | null = null;
+  errorMessage: string | null = null;
 
   constructor(
     private fb: FormBuilder,
+    public route: ActivatedRoute,
+    public router: Router,
     private userService: UserService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
-    this.initForm();
-  }
+    this.initForm(); 
+    
+    this.route.paramMap.pipe(
+      switchMap(params => {
+        const idParam = params.get('id');
+        this.userId = idParam ? +idParam : null;
 
-  // Detecta mudanças na propriedade 'user' (quando o modal é reaberto para outro usuário)
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes['user'] && this.userForm) {
-      this.initForm(this.user);
-    }
-  }
-
-  initForm(user?: User | null): void {
-    this.userForm = this.fb.group({
-      id: [user?.id || null],
-      username: [user?.username || '', [Validators.required, Validators.minLength(3)]],
-      password: ['', [!user?.id ? Validators.required : Validators.minLength(6)]], // Senha só é obrigatória na criação
-      isAdmin: [user?.isAdmin || false]
+        if (this.userId) {
+          this.isEditMode = true;
+          return this.userService.getUserById(this.userId);
+        } else {
+          return of(null); 
+        }
+      })
+    ).subscribe({
+      next: (user: User | null) => {
+        if (user) {
+          this.loadUser(user);
+        }
+      },
+      error: (err) => {
+        console.error('Erro ao carregar usuário:', err);
+        this.errorMessage = 'Não foi possível carregar os dados do usuário.';
+      }
     });
-
-    if (user?.id) {
-      this.userForm.get('password')?.clearValidators(); // Remove o required se estiver editando
-      this.userForm.get('password')?.updateValueAndValidity();
-    }
   }
 
-  // Helper para validação
-  isInvalid(controlName: string) {
-    const control = this.userForm.get(controlName);
-    return control?.invalid && (control?.dirty || control?.touched);
+
+  initForm(): void {
+    const passwordValidators = !this.isEditMode ? 
+      [Validators.required, Validators.minLength(6)] : 
+      []; 
+
+    this.userForm = this.fb.group({
+      username: ['', Validators.required],
+      email: ['', [Validators.required, Validators.email]],
+      
+      password: ['', passwordValidators],
+      
+      isAdmin: [false]
+    });
   }
+
+  loadUser(user: User): void {
+    this.userForm.patchValue({
+      username: user.username,
+      email: user.email,
+      isAdmin: user.isAdmin || false
+    });
+  }
+
 
   onSubmit(): void {
+    this.successMessage = null;
+    this.errorMessage = null;
+
     if (this.userForm.invalid) {
       this.userForm.markAllAsTouched();
+      this.errorMessage = 'Por favor, corrija os erros no formulário.';
       return;
     }
-
-    const formData = this.userForm.value;
-
-    if (formData.id) {
-      // Editar
-      this.userService.update(formData.id, formData).subscribe(() => {
-        this.userSaved.emit();
+    
+    const payload = this.userForm.value as UserPayload;
+    
+    if (this.isEditMode && this.userId !== null) {
+      if (!payload.password) {
+        delete payload.password;
+      }
+      
+      this.userService.update(this.userId, payload).subscribe({
+        next: () => {
+          this.successMessage = 'Usuário atualizado com sucesso!';
+          setTimeout(() => this.router.navigate(['/users']), 2000); 
+        },
+        error: (err) => {
+          console.error('Erro na atualização:', err);
+          this.errorMessage = `Falha ao atualizar usuário: ${err.message || 'Erro de servidor.'}`;
+        }
       });
     } else {
-      // Criar
-      this.userService.create(formData).subscribe(() => {
-        this.userSaved.emit();
+      this.userService.create(payload).subscribe({
+        next: () => {
+          this.successMessage = 'Novo usuário criado com sucesso!';
+          setTimeout(() => this.router.navigate(['/users']), 2000); 
+        },
+        error: (err) => {
+          console.error('Erro na criação:', err);
+          this.errorMessage = `Falha ao criar usuário: ${err.message || 'Erro de servidor.'}`;
+        }
       });
     }
-    // Nota: O fechamento do modal será tratado no UserListComponent após o userSaved.emit()
   }
+
+  get f() { return this.userForm.controls; }
 }

@@ -1,26 +1,34 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http'; // 👈 Importe
+import { HttpClient } from '@angular/common/http';
 import { Observable, of, tap } from 'rxjs';
 import { Router } from '@angular/router';
-import { environment } from '../../../environments/environment'; // 👈 Ajuste o caminho conforme necessário
-import { Credentials, AuthResponse } from '../models/credentials.model'; // 👈 Seus Models
+
+import { environment } from '../../../environments/environment'; 
+import { Credentials, AuthResponse } from '../models/credentials.model'; 
+
+import { jwtDecode } from 'jwt-decode';
+
+interface JwtPayload {
+  [key: string]: any;
+}
+
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
   private readonly TOKEN_KEY = 'auth_token';
-  private readonly LOGIN_URL = `${environment.apiUrl}/Auth/login`; // 👈 Rota do seu Backend
+  private readonly LOGIN_URL = `${environment.apiUrl}/Auth/login`;
+  
+  private readonly USERNAME_CLAIM = 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name';
 
   constructor(
-    private http: HttpClient, // 👈 Injeção do HttpClient
+    private http: HttpClient,
     private router: Router
   ) {}
 
   login(credentials: Credentials): Observable<AuthResponse> {
-    // 1. Faz a requisição POST para o backend
     return this.http.post<AuthResponse>(this.LOGIN_URL, credentials).pipe(
-      // 2. Se a resposta for um sucesso (código 200), salvamos o token
       tap(response => {
         if (response && response.token) {
           localStorage.setItem(this.TOKEN_KEY, response.token);
@@ -31,17 +39,41 @@ export class AuthService {
 
   logout(): void {
     localStorage.removeItem(this.TOKEN_KEY);
-    // Redireciona para a tela de login
     this.router.navigate(['/login']); 
   }
 
   isLoggedIn(): boolean {
-    const token = localStorage.getItem(this.TOKEN_KEY);
-    // Em um projeto real, você verificaria se o token não expirou.
+    const token = this.getToken();
     return !!token; 
   }
 
   getToken(): string | null {
     return localStorage.getItem(this.TOKEN_KEY);
+  }
+
+  getDecodedUsername(): string | null {
+    const token = this.getToken();
+
+    if (token) {
+      try {
+        const decodedToken = jwtDecode(token) as JwtPayload;
+        
+        if (decodedToken[this.USERNAME_CLAIM]) {
+             return decodedToken[this.USERNAME_CLAIM];
+        }
+        
+        if (decodedToken.username) {
+            return decodedToken.username;
+        }
+
+        console.warn('Claim de Username não encontrado no token decodificado:', decodedToken);
+        return null;
+
+      } catch (error) {
+        console.error('Erro ao decodificar token. O token pode estar malformado.', error);
+        return null;
+      }
+    }
+    return null;
   }
 }

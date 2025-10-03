@@ -1,60 +1,65 @@
 import { Component, OnInit } from '@angular/core';
-import { UserService } from '../../core/services/user.service';
-import { User } from '../../core/models/user.model';
-import { AuthService } from '../../core/services/auth.service';
+import { FormBuilder, FormGroup } from '@angular/forms';
 import { Router } from '@angular/router';
+
+import { UserService, UserFilter } from '../../core/services/user.service'; 
+import { User } from '../../core/models/user.model'; 
 
 @Component({
   selector: 'app-user-list',
-  standalone:false,
+  standalone: false,
   templateUrl: './user-list.component.html',
   styleUrls: ['./user-list.component.css']
 })
 export class UserListComponent implements OnInit {
+  
+  searchForm!: FormGroup;
   users: User[] = [];
-  selectedUser: User | null = null;
-  userToDelete: User | null = null;
-
+  
   constructor(
-    private userService: UserService,
-    private authService: AuthService,
-    private router: Router
-  ) {}
+    private fb: FormBuilder,
+    private router: Router,
+    private userService: UserService
+  ) { }
 
   ngOnInit(): void {
-    this.loadUsers();
+    this.searchForm = this.fb.group({
+      username: [''],
+    });
+    
+    this.searchUsers(); 
   }
 
-  loadUsers(): void {
-    this.userService.getAll().subscribe(data => {
-      this.users = data;
+  searchUsers(): void {
+    const filters: UserFilter = this.searchForm.value;
+
+    this.userService.search(filters).subscribe({
+      next: (data: User[]) => {
+        this.users = data;
+      },
+      error: (err) => {
+        console.error('Erro ao buscar usuários:', err);
+      }
     });
   }
 
-  // Prepara o formulário/modal para criar ou editar
-  selectUser(user: User | null): void {
-    this.selectedUser = user ? { ...user } : null; // Clonar para evitar alteração direta
-    // Em uma estrutura de rotas, isso faria this.router.navigate(['/users/edit', user.id])
+  editUser(id: number): void {
+    this.router.navigate(['/users/edit', id]);
   }
 
-  // Prepara o usuário para a exclusão
-  selectUserToDelete(user: User): void {
-    this.userToDelete = user;
-  }
-
-  // Ação de Excluir (Chamada do modal de Confirmação)
-  deleteUser(): void {
-    if (this.userToDelete) {
-      // Chamar o método delete do UserService e recarregar a lista
-      this.userService.delete(this.userToDelete.id).subscribe(() => {
-        this.loadUsers(); // Recarrega a lista após a exclusão
-        this.userToDelete = null; // Limpa
+  deleteUser(id: number): void {
+    if (confirm(`Tem certeza que deseja deletar o usuário ID ${id}?`)) {
+      
+      this.userService.delete(id).subscribe({
+        next: () => {
+          console.log(`Usuário ID ${id} deletado com sucesso.`);
+          this.searchUsers(); 
+        },
+        error: (err) => {
+          console.error('Erro ao deletar usuário:', err);
+          alert('Não foi possível deletar o usuário.');
+        }
       });
     }
-  }
-
-  logout(): void {
-    this.authService.logout();
-    this.router.navigate(['/login']);
   }
 }

@@ -7,6 +7,7 @@ using System.Security.Claims;
 using System.Text;
 using Sisand.Domain.DTO;
 using Sisand.Domain.interfaces;
+using Sisand.Domain.PasswordHash;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -24,8 +25,9 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginDTO dto)
     {
+        var hashedPassword = PasswordHasher.HashPassword(dto.Password);
         var user = await _repo.GetUserByUsernameAsync(dto.Username);
-        if (user == null || user.PasswordHash != dto.Password) return Unauthorized();
+        if (user == null || user.PasswordHash != hashedPassword) return Unauthorized();
 
         var token = GenerateJwtToken(user);
         return Ok(new { token });

@@ -4,10 +4,10 @@ import { UserListComponent } from './user-list/user-list.component';
 import { UserFormComponent } from './user-form/user-form.component';
 
 const routes: Routes = [
-  { path: '', component: UserListComponent },            // /users
-  { path: 'new', component: UserFormComponent },         // /users/new
-  { path: ':id/edit', component: UserFormComponent },    // /users/123/edit
-  { path: ':id', component: UserFormComponent }          // /users/123 (pode ser detalhe ou edição)
+  { path: '', component: UserListComponent },
+  { path: 'new', component: UserFormComponent },
+  { path: 'edit/:id', component: UserFormComponent },
+  { path: ':id', component: UserFormComponent }
 ];
 
 @NgModule({

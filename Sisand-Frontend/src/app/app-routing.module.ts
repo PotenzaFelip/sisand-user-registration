@@ -4,9 +4,13 @@ import { LoginComponent } from './auth/login/login.component';
 import { AuthGuard } from './auth/auth.guard';
 
 const routes: Routes = [
-  { path: '', redirectTo: 'login', pathMatch: 'full' },
-  { path: 'user', loadChildren: () => import('./user/user.module').then(m => m.UserModule), canActivate: [AuthGuard] },
-  { path: 'login', component: LoginComponent }
+  { path: '', redirectTo: 'login', pathMatch: 'full' }, 
+  
+  { path: 'users', loadChildren: () => import('./user/user.module').then(m => m.UserModule), canActivate: [AuthGuard] },
+  
+  { path: 'login', component: LoginComponent },
+  
+  { path: '**', redirectTo: 'login' } 
 ];
 
 @NgModule({
