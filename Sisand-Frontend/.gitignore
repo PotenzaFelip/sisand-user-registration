@@ -1,0 +1,37 @@
+# Arquivos e pastas padrão do Node.js e Angular
+
+# Dependências
+/node_modules
+
+# Logs do NPM
+npm-debug.log
+.npm
+
+# Diretórios de build/distribuição
+/dist
+/out-tsc
+
+# Cache do Angular CLI
+.angular/cache
+.angular/browserslist
+.ng-config.json
+
+# Diretórios de build local/IDE (para usuários do VS Code)
+/build
+
+# Configurações do ambiente de desenvolvimento
+.env
+.local
+.vscode/settings.json
+.vscode/tasks.json
+.vscode/launch.json
+.vscode/extensions.json
+.history
+
+# Arquivos de IDEs/Sistema Operacional
+.DS_Store
+Thumbs.db
+
+# Diretórios de cache e cobertura de testes
+/coverage
+/e2e/

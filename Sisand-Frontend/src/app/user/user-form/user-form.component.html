@@ -1,0 +1,49 @@
+<form [formGroup]="userForm" (ngSubmit)="onSubmit()">
+    <div class="mb-3">
+        <label for="username" class="form-label">Nome de Usuário</label>
+        <input
+            type="text"
+            id="username"
+            formControlName="username"
+            class="form-control"
+            [ngClass]="{'is-invalid': isInvalid('username')}"
+        >
+        <div *ngIf="isInvalid('username')" class="invalid-feedback">
+            O nome de usuário é obrigatório e precisa ter no mínimo 3 caracteres.
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label for="password" class="form-label">
+            Senha <span *ngIf="user?.id" class="text-muted">(Deixe em branco para manter a senha)</span>
+        </label>
+        <input
+            type="password"
+            id="password"
+            formControlName="password"
+            class="form-control"
+            [ngClass]="{'is-invalid': isInvalid('password')}"
+        >
+        <div *ngIf="isInvalid('password')" class="invalid-feedback">
+            A senha é obrigatória na criação e deve ter no mínimo 6 caracteres.
+        </div>
+    </div>
+
+    <div class="form-check mb-4">
+        <input
+            type="checkbox"
+            id="isAdmin"
+            formControlName="isAdmin"
+            class="form-check-input"
+        >
+        <label class="form-check-label" for="isAdmin">
+            Usuário Administrador
+        </label>
+    </div>
+
+    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+        <button type="submit" class="btn btn-primary" [disabled]="userForm.invalid">
+            <i class="bi bi-save"></i> Salvar
+        </button>
+    </div>
+</form>
