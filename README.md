@@ -6,7 +6,7 @@ Este projeto utiliza um **Monorepo** (repositório único), contendo as seguinte
 
 | Pasta | Descrição | Tecnologia | Porta Padrão |
 | :--- | :--- | :--- | :--- |
-| **`Sisand.Api`** | Backend: Lógica de negócio, autenticação (JWT) e API REST. | .NET Core 8 | `https://localhost:7041` |
+| **`Sisand.Api`** | Backend: Lógica de negócio, autenticação (JWT) e API REST. | .NET Core 8 | `https://localhost:7041`  `http://localhost:5247` |
 | **`sisand-frontend`** | Frontend: Interface SPA (Single Page Application) com Bootstrap. | Angular 17+ | `http://localhost:4200` |
 
 ---
@@ -67,7 +67,7 @@ Para rodar a aplicação, você deve inicializar o Backend e o Frontend separada
 
     ```bash
     dotnet run
-    # A API estará ativa em https://localhost:7041
+    # A API estará ativa em https://localhost:7041 (ou http://localhost:5247)
     ```
 
 ### Passo 3: Inicializar o Frontend
@@ -83,10 +83,19 @@ Para rodar a aplicação, você deve inicializar o Backend e o Frontend separada
     ```bash
     npm install
     ```
+3. **Conexão:** Navegue até `Sisand-Frontend/src/environments/environment.ts` e **atualize** a a porta de conexão `"apiUrl"` com a porta gerada pelo Backend.
+    ```ts
+    // sisand-frontend/src/environments/environment.ts
 
-3.  Rode a aplicação Angular:
+    export const environment = {
+      production: false,
+      apiUrl: 'http://localhost:5247/api', (ou https://localhost:7041)
+    };
+    ```
+4.  Rode a aplicação Angular:
 
     ```bash
+    
     ng serve -o
     # O app abrirá automaticamente no navegador em http://localhost:4200
     ```
