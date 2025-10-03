@@ -34,9 +34,18 @@ namespace Sisand.Data.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task UpdateAsync(User user)
+        public async Task UpdateAsync(int id, User user)
         {
-            _context.Users.Update(user);
+            var existingUser = await _context.Users.FindAsync(id);
+
+            if (existingUser == null)           
+                throw new KeyNotFoundException($"Usuário com ID {id} não encontrado para atualização.");
+
+            existingUser.Username = user.Username;
+            existingUser.Email = user.Email;
+            existingUser.PasswordHash = user.PasswordHash;
+            existingUser.PasswordSalt = user.PasswordSalt;
+
             await _context.SaveChangesAsync();
         }
 
@@ -51,8 +60,7 @@ namespace Sisand.Data.Repositories
         }
         public async Task<User> GetUserByUsernameAsync(string username)
         {
-            return await _context.Users
-                .FirstOrDefaultAsync(u => u.Username == username);
+            return await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
         }
 
     }

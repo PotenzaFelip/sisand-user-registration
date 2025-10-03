@@ -11,7 +11,7 @@ namespace Sisand.Domain.interfaces
         Task<IEnumerable<User>> GetUsersAsync();
         Task<User> GetUserByIdAsync(int id);
         Task SaveAllAsync(User user);
-        Task UpdateAsync(User user);
+        Task UpdateAsync(int id,User user);
         Task DeleteAsync(int id);
 
         Task<User> GetUserByUsernameAsync(string username);

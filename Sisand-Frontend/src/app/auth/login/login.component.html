@@ -1,51 +1,57 @@
-<div class="container d-flex justify-content-center align-items-center vh-100">
-  <div class="card shadow-lg" style="width: 24rem;">
-    <div class="card-header bg-primary text-white text-center">
-      <h4>Acesso ao Sistema</h4>
-    </div>
-    <div class="card-body">
-      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-
-        <div *ngIf="error" class="alert alert-danger" role="alert">
-          {{ error }}
-        </div>
-
-        <div class="mb-3">
-          <label for="username" class="form-label">Usuário</label>
-          <input
-            type="text"
-            id="username"
-            formControlName="username"
-            class="form-control"
-            [ngClass]="{'is-invalid': isInvalid('username')}"
-            placeholder="Digite seu nome de usuário"
-          >
-          <div *ngIf="isInvalid('username')" class="invalid-feedback">
-            Usuário é obrigatório.
+<div class="row justify-content-center mt-5">
+  <div class="col-md-6 col-lg-4">
+    <div class="card shadow-lg">
+      <div class="card-header bg-primary text-white text-center">
+        <h3 class="mb-0">Acesso ao Sistema</h3>
+      </div>
+      <div class="card-body">
+        
+        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+          
+          <div *ngIf="error" class="alert alert-danger" role="alert">
+            {{ error }}
           </div>
-        </div>
-
-        <div class="mb-4">
-          <label for="password" class="form-label">Senha</label>
-          <input
-            type="password"
-            id="password"
-            formControlName="password"
-            class="form-control"
-            [ngClass]="{'is-invalid': isInvalid('password')}"
-            placeholder="Digite sua senha"
-          >
-          <div *ngIf="isInvalid('password')" class="invalid-feedback">
-            Senha é obrigatória.
+          
+          <div class="mb-3">
+            <label for="username" class="form-label">Usuário:</label>
+            <input 
+              type="text" 
+              class="form-control" 
+              id="username" 
+              formControlName="username"
+              placeholder="Digite seu nome de usuário"
+            >
+            <div *ngIf="loginForm.get('username')?.touched && loginForm.get('username')?.errors?.['required']" class="text-danger">
+              Usuário é obrigatório.
+            </div>
           </div>
-        </div>
 
-        <div class="d-grid">
-          <button type="submit" class="btn btn-primary" [disabled]="loginForm.invalid">
-            Entrar
-          </button>
-        </div>
-      </form>
+          <div class="mb-4">
+            <label for="password" class="form-label">Senha:</label>
+            <input 
+              type="password" 
+              class="form-control" 
+              id="password" 
+              formControlName="password"
+              placeholder="Digite sua senha"
+            >
+             <div *ngIf="loginForm.get('password')?.touched && loginForm.get('password')?.errors?.['required']" class="text-danger">
+              Senha é obrigatória.
+            </div>
+          </div>
+
+          <div class="d-grid">
+            <button 
+              type="submit" 
+              class="btn btn-primary btn-lg"
+              [disabled]="loginForm.invalid" 
+            >
+              Acessar
+            </button>
+          </div>
+        </form>
+
+      </div>
     </div>
   </div>
 </div>

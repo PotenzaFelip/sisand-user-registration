@@ -25,3 +25,6 @@ Logs
 
 Windows
 Thumbs.db
+
+# Dependências
+*.node_modules

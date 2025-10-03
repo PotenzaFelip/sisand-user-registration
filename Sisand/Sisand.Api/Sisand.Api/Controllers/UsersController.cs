@@ -44,10 +44,16 @@ public class UsersController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update(int id, User user)
+    public async Task<IActionResult> Update(int id, CreateUserDTO dto)
     {
-        if (id != user.Id) return BadRequest();
-        await _repo.UpdateAsync(user);
+        var user = new User
+        {
+            Username = dto.Username,
+            PasswordHash = dto.PasswordHash,
+            PasswordSalt = dto.PasswordSalt,
+            Email = dto.Email,
+        };
+        await _repo.UpdateAsync(id, user);
         return NoContent();
     }
 
