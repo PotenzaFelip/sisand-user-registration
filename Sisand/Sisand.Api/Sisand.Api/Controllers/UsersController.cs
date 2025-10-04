@@ -54,6 +54,22 @@ public class UsersController : ControllerBase
 
         return Ok(dto);
     }
+    [HttpGet("By/{username}")]
+    public async Task<IActionResult> GetByUsername(string username)
+    {
+        var user = await _userRepository.GetUserByUsernameAsync(username);
+        if (user == null) return NotFound();
+
+        var dto = new UserReadDTO
+        {
+            Id = user.Id,
+            Username = user.Username,
+            Email = user.Email,
+            CreatedAt = user.CreatedAt
+        };
+
+        return Ok(dto);
+    }
 
     [AllowAnonymous]
     [HttpPost]
