@@ -1,30 +1,49 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
+using System.Linq;
 
 namespace Sisand.Domain.PasswordHash
 {
     public static class PasswordHasher
     {
-        private const string StaticSalt = "MEU_SALT_SECRETO_E_ESTATICO_DEVE_SER_BEM_LONGO";
 
-        public static string HashPassword(string password)
+        public static byte[] GenerateSalt()
+        {
+            return RandomNumberGenerator.GetBytes(16);
+        }
+
+        public static string HashPassword(string password, byte[] saltBytes)
         {
             var passwordBytes = Encoding.UTF8.GetBytes(password);
-            var saltBytes = Encoding.UTF8.GetBytes(StaticSalt);
 
-            var combinedBytes = new byte[passwordBytes.Length + saltBytes.Length];
-            Buffer.BlockCopy(passwordBytes, 0, combinedBytes, 0, passwordBytes.Length);
-            Buffer.BlockCopy(saltBytes, 0, combinedBytes, passwordBytes.Length, saltBytes.Length);
-
+            var combinedBytes = passwordBytes.Concat(saltBytes).ToArray();
 
             using (var sha256 = SHA256.Create())
             {
                 var hashBytes = sha256.ComputeHash(combinedBytes);
                 return Convert.ToBase64String(hashBytes);
+            }
+        }
+
+        public static bool VerifyPassword(string enteredPassword, string storedHash, string storedSaltBase64)
+        {
+            if (string.IsNullOrEmpty(storedSaltBase64) || string.IsNullOrEmpty(storedHash))
+            {
+                return false;
+            }
+
+            try
+            {
+                var storedSaltBytes = Convert.FromBase64String(storedSaltBase64);
+
+                var enteredPasswordHash = HashPassword(enteredPassword, storedSaltBytes);
+
+                return enteredPasswordHash == storedHash;
+            }
+            catch (FormatException)
+            {
+                return false;
             }
         }
     }

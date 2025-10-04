@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+using Sisand.Data;
 using Sisand.Domain;
-using Sisand.Domain.interfaces;
+using Sisand.Domain.Interfaces;
 
 namespace Sisand.Data.Repositories
 {
@@ -18,51 +14,39 @@ namespace Sisand.Data.Repositories
             _context = context;
         }
 
+
         public async Task<IEnumerable<User>> GetUsersAsync()
         {
-            return await _context.Users.ToListAsync();
+            return await _context.Users.AsNoTracking().ToListAsync();
         }
 
-        public async Task<User> GetUserByIdAsync(int id)
+        public async Task<User?> GetUserByIdAsync(int id)
         {
-            return await _context.Users.FindAsync(id);
+            return await _context.Users
+                                 .AsNoTracking()
+                                 .FirstOrDefaultAsync(u => u.Id == id);
         }
 
-        public async Task SaveAllAsync(User user)
+        public async Task<User?> GetUserByUsernameAsync(string username)
+        {
+            return await _context.Users
+                                 .AsNoTracking()
+                                 .FirstOrDefaultAsync(u => u.Username == username);
+        }
+
+        public void Add(User user)
         {
             _context.Users.Add(user);
-            await _context.SaveChangesAsync();
         }
 
-        public async Task UpdateAsync(int id, User user)
+        public void Update(User user)
         {
-            var existingUser = await _context.Users.FindAsync(id);
-
-            if (existingUser == null)           
-                throw new KeyNotFoundException($"Usuário com ID {id} não encontrado para atualização.");
-
-            existingUser.Username = user.Username;
-            existingUser.Email = user.Email;
-            existingUser.PasswordHash = user.PasswordHash;
-            existingUser.PasswordSalt = user.PasswordSalt;
-
-            await _context.SaveChangesAsync();
+            _context.Users.Update(user);
         }
 
-        public async Task DeleteAsync(int id)
+        public void Delete(User user)
         {
-            var user = await _context.Users.FindAsync(id);
-            if (user != null)
-            {
-                _context.Users.Remove(user);
-                await _context.SaveChangesAsync();
-            }
+            _context.Users.Remove(user);
         }
-        public async Task<User> GetUserByUsernameAsync(string username)
-        {
-            return await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
-        }
-
     }
-
 }

@@ -4,7 +4,8 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Sisand.Data;
 using Sisand.Data.Repositories;
-using Sisand.Domain.interfaces;
+using Sisand.Domain.Interfaces;
+using Sisand.Infrastructure;
 using System.Text;
 
 
@@ -77,6 +78,8 @@ builder.Services.AddCors(options =>
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 var app = builder.Build();
 
