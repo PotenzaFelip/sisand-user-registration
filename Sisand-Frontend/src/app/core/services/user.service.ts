@@ -1,35 +1,29 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
-
-import { User } from '../models/user.model';
+import { User } from '../models/user.model'; 
 import { environment } from '../../../environments/environment';
 
 export interface UserFilter {
   username?: string;
 }
 
-// ATUALIZAÇÃO: UserPayload agora inclui todos os campos 
-// de perfil e endereço necessários para a criação/edição.
 export interface UserPayload {
   username: string;
   email: string;
   password?: string;
 
-  // Dados Pessoais
-  name: string; // Campo obrigatório
+  name: string;
   phone?: string;
   cpf?: string;
-  dateOfBirth?: Date | string; // Permite string para o input[type=date]
+  dateOfBirth?: Date | string; 
 
-  // Endereço
   cep?: string;
   address?: string;
   city?: string;
   state?: string;
 
-  // Acesso
   isAdmin?: boolean;
   status?: boolean;
 }
@@ -38,7 +32,7 @@ export interface UserPayload {
   providedIn: 'root'
 })
 export class UserService {
-  private readonly USER_API_URL = `${environment.apiUrl}/Users`;
+  private readonly USER_API_URL = `${environment.apiUrl}/Users`; 
 
   constructor(private http: HttpClient) { }
 
@@ -78,22 +72,21 @@ export class UserService {
 
   create(payload: UserPayload): Observable<User> {
     return this.http.post<User>(this.USER_API_URL, payload).pipe(
-      catchError(error => {
+      catchError((error: HttpErrorResponse) => {
         console.error('Erro ao criar usuário:', error);
-        return throwError(() => new Error('Falha ao tentar criar novo usuário.'));
+        return throwError(() => error); 
       })
     );
   }
 
-  update(id: number, payload: UserPayload): Observable<User> {
-    return this.http.put<User>(`${this.USER_API_URL}/${id}`, payload).pipe(
-      catchError(error => {
+  update(id: number, payload: UserPayload): Observable<Object> {
+    return this.http.put<Object>(`${this.USER_API_URL}/${id}`, payload).pipe(
+      catchError((error: HttpErrorResponse) => {
         console.error(`Erro ao atualizar usuário ${id}:`, error);
-        return throwError(() => new Error('Falha ao tentar atualizar o usuário.'));
+        return throwError(() => error);
       })
     );
   }
-
   delete(id: number): Observable<void> {
     return this.http.delete<void>(`${this.USER_API_URL}/${id}`).pipe(
       catchError(error => {

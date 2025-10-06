@@ -20,9 +20,15 @@
                     <div class="col-md-6 mb-3">
                         <label for="username" class="form-label">Nome de Usuário <span class="text-danger">*</span></label>
                         <input type="text" id="username" formControlName="username" class="form-control"
-                            [ngClass]="{'is-invalid': f['username'].invalid && f['username'].touched}">
-                        <div *ngIf="f['username'].invalid && f['username'].touched" class="invalid-feedback">
-                            O nome de usuário é obrigatório.
+                            [ngClass]="{'is-invalid': f['username'].invalid && (f['username'].touched || f['username'].dirty)}">
+                            
+                        <div *ngIf="f['username'].invalid && (f['username'].touched || f['username'].dirty)" class="invalid-feedback">
+                            <div *ngIf="f['username'].errors?.['required']">
+                                O nome de usuário é obrigatório.
+                            </div>
+                            <div *ngIf="f['username'].errors?.['serverError']">
+                                {{ f['username'].errors?.['serverError'] }}
+                            </div>
                         </div>
                     </div>
 
@@ -39,7 +45,7 @@
                 <div class="mb-3" *ngIf="!isEditMode || f['password']">
                     <label for="password" class="form-label">
                         Senha <span *ngIf="!isEditMode" class="text-danger">*</span>
-                        <span *ngIf="isEditMode" class="text-muted">(Deixe em branco para não alterar)</span>
+                        <span *ngIf="isEditMode" class="text-muted"></span>
                     </label>
                     <input type="password" id="password" formControlName="password" class="form-control"
                         [ngClass]="{'is-invalid': f['password'].invalid && f['password'].touched}">
@@ -74,7 +80,14 @@
 
                     <div class="col-md-6 mb-3">
                         <label for="dateOfBirth" class="form-label">Data de Nascimento</label>
-                        <input type="date" id="dateOfBirth" formControlName="dateOfBirth" class="form-control">
+                        <input type="date" id="dateOfBirth" formControlName="dateOfBirth" class="form-control"
+                            [ngClass]="{'is-invalid': f['dateOfBirth'].invalid && f['dateOfBirth'].touched}">
+                        
+                        <div *ngIf="f['dateOfBirth'].invalid && f['dateOfBirth'].touched" class="invalid-feedback">
+                            <div *ngIf="f['dateOfBirth'].errors?.['dateMustBeInPast']">
+                                A data de nascimento deve ser anterior à data atual.
+                            </div>
+                        </div>
                     </div>
                 </div>
                 
@@ -82,8 +95,22 @@
 
                 <div class="row">
                     <div class="col-md-4 mb-3">
-                        <label for="cep" class="form-label">CEP</label>
-                        <input type="text" id="cep" formControlName="cep" class="form-control">
+                        <label for="cep" class="form-label">CEP <span class="text-danger">*</span></label>
+                        <input 
+                            type="text" 
+                            id="cep" 
+                            formControlName="cep" 
+                            class="form-control"
+                            [ngClass]="{'is-invalid': f['cep'].invalid && f['cep'].touched}">
+                        
+                        <div *ngIf="f['cep'].invalid && f['cep'].touched" class="invalid-feedback">
+                            <div *ngIf="f['cep'].errors?.['required']">
+                                O CEP é obrigatório.
+                            </div>
+                            <div *ngIf="f['cep'].errors?.['pattern']">
+                                O formato do CEP é inválido (Ex: 00000-000).
+                            </div>
+                        </div>
                     </div>
                     
                     <div class="col-md-8 mb-3">
