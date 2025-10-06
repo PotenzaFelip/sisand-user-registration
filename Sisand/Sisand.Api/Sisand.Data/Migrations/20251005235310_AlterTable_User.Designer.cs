@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Sisand.Data;
@@ -11,9 +12,11 @@ using Sisand.Data;
 namespace Sisand.Data.Migrations
 {
     [DbContext(typeof(SisandDbContext))]
-    partial class SisandDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251005235310_AlterTable_User")]
+    partial class AlterTable_User
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

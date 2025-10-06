@@ -40,11 +40,12 @@
               <td>{{ user.id }}</td>
               <td>{{ user.username }}</td>
               <td>{{ user.email }}</td>
-              <td>{{ user.createdAt | date: 'short' }}</td> <td class="text-center">
-                <button class="btn btn-sm btn-info me-2" (click)="editUser(user.id)">
+              <td>{{ user.createdAt | date: 'short' }}</td> 
+              <td class="text-center">
+                <button class="btn btn-sm btn-info me-2" (click)="editUser(user.id!)">
                   <i class="bi bi-pencil"></i> Editar
                 </button>
-                <button class="btn btn-sm btn-danger" (click)="deleteUser(user.id)">
+                <button class="btn btn-sm btn-danger" (click)="deleteUser(user.id!)">
                   <i class="bi bi-trash"></i> Deletar
                 </button>
               </td>

@@ -6,7 +6,7 @@ using Sisand.Domain.Interfaces;
 using Sisand.Domain.PasswordHash;
 using System;
 using System.Linq;
-using System.Security.Cryptography;
+using System.Threading.Tasks;
 
 [Authorize]
 [ApiController]
@@ -22,19 +22,33 @@ public class UsersController : ControllerBase
         _unitOfWork = unitOfWork;
     }
 
+    private UserReadDTO MapUserToReadDto(User user)
+    {
+        return new UserReadDTO
+        {
+            Id = user.Id,
+            Username = user.Username,
+            Email = user.Email,
+            CreatedAt = user.CreatedAt,
+
+            Name = user.Name,
+            Phone = user.Phone,
+            CPF = user.CPF,
+            DateOfBirth = user.DateOfBirth,
+            CEP = user.CEP,
+            Address = user.Address,
+            City = user.City,
+            State = user.State,
+            IsAdmin = user.IsAdmin,
+            Status = user.Status
+        };
+    }
+
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
         var users = await _userRepository.GetUsersAsync();
-
-        var dtos = users.Select(u => new UserReadDTO
-        {
-            Id = u.Id,
-            Username = u.Username,
-            Email = u.Email,
-            CreatedAt = u.CreatedAt
-        });
-
+        var dtos = users.Select(MapUserToReadDto);
         return Ok(dtos);
     }
 
@@ -44,30 +58,17 @@ public class UsersController : ControllerBase
         var user = await _userRepository.GetUserByIdAsync(id);
         if (user == null) return NotFound();
 
-        var dto = new UserReadDTO
-        {
-            Id = user.Id,
-            Username = user.Username,
-            Email = user.Email,
-            CreatedAt = user.CreatedAt
-        };
-
+        var dto = MapUserToReadDto(user);
         return Ok(dto);
     }
+
     [HttpGet("By/{username}")]
     public async Task<IActionResult> GetByUsername(string username)
     {
         var user = await _userRepository.GetUserByUsernameAsync(username);
         if (user == null) return NotFound();
 
-        var dto = new UserReadDTO
-        {
-            Id = user.Id,
-            Username = user.Username,
-            Email = user.Email,
-            CreatedAt = user.CreatedAt
-        };
-
+        var dto = MapUserToReadDto(user);
         return Ok(dto);
     }
 
@@ -80,25 +81,35 @@ public class UsersController : ControllerBase
             return BadRequest("O nome de usuário já está em uso.");
         }
 
-        var saltBytes = PasswordHasher.GenerateSalt();
-        var saltBase64 = Convert.ToBase64String(saltBytes);
-
-        var hashedPassword = PasswordHasher.HashPassword(dto.Password, saltBytes);
+        var PasswordSalt = PasswordHasher.GenerateSalt();
+        var hashedPassword = PasswordHasher.HashPassword(dto.Password, PasswordSalt);
 
         var user = new User
         {
             Username = dto.Username,
             PasswordHash = hashedPassword,
-            PasswordSalt = saltBase64,
+            PasswordSalt = Convert.ToBase64String(PasswordSalt),
             Email = dto.Email,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
+
+            Name = dto.Name,
+            Phone = dto.Phone,
+            CPF = dto.CPF,
+            DateOfBirth = dto.DateOfBirth,
+
+            CEP = dto.CEP,
+            Address = dto.Address,
+            City = dto.City,
+            State = dto.State,
+
+            IsAdmin = dto.IsAdmin,
+            Status = dto.Status
         };
 
         _userRepository.Add(user);
-
         await _unitOfWork.CompleteAsync();
 
-        var readDto = new UserReadDTO { Id = user.Id, Username = user.Username, Email = user.Email, CreatedAt = user.CreatedAt };
+        var readDto = MapUserToReadDto(user);
         return CreatedAtAction(nameof(Get), new { id = user.Id }, readDto);
     }
 
@@ -110,18 +121,28 @@ public class UsersController : ControllerBase
 
         existingUser.Username = dto.Username;
         existingUser.Email = dto.Email;
+        existingUser.Name = dto.Name;
+
+        existingUser.Phone = dto.Phone;
+        existingUser.CPF = dto.CPF;
+        existingUser.DateOfBirth = dto.DateOfBirth;
+
+        existingUser.CEP = dto.CEP;
+        existingUser.Address = dto.Address;
+        existingUser.City = dto.City;
+        existingUser.State = dto.State;
+
+        existingUser.IsAdmin = dto.IsAdmin;
+        existingUser.Status = dto.Status;
 
         if (!string.IsNullOrWhiteSpace(dto.Password))
         {
-            var newSaltBytes = PasswordHasher.GenerateSalt();
-
-            existingUser.PasswordHash = PasswordHasher.HashPassword(dto.Password, newSaltBytes);
-
-            existingUser.PasswordSalt = Convert.ToBase64String(newSaltBytes);
+            var PasswordSalt = PasswordHasher.GenerateSalt();
+            existingUser.PasswordHash = PasswordHasher.HashPassword(dto.Password, PasswordSalt);
+            existingUser.PasswordSalt = Convert.ToBase64String(PasswordSalt);
         }
 
         _userRepository.Update(existingUser);
-
         await _unitOfWork.CompleteAsync();
 
         return NoContent();
