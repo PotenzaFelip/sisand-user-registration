@@ -8,7 +8,7 @@ export interface User {
   name: string;
   phone?: string;
   cpf?: string;
-  dateOfBirth?: Date;
+  dateOfBirth?: Date | string; 
 
   cep?: string;
   address?: string;
@@ -16,5 +16,5 @@ export interface User {
   state?: string;
 
   isAdmin?: boolean;
-  status?: boolean;
+  status?: boolean; 
 }

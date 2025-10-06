@@ -51,7 +51,7 @@ export class LoginComponent implements OnInit {
         } 
       },
       error: (err) => {
-        this.error = 'Falha no login. Verifique suas credenciais.';
+        this.error = 'Falha no login. Por gentileza entrar em contato com o administrador.';
         console.error('Erro de autenticação:', err);
       }
     });
