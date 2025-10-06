@@ -1,5 +1,3 @@
-
-
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -39,6 +37,8 @@ export class UserFormComponent implements OnInit {
 
         if (this.userId) {
           this.isEditMode = true;
+          // Corrigindo a chamada do initForm para garantir que o isEditMode esteja correto
+          this.initForm(); 
           return this.userService.getUserById(this.userId);
         } else {
           return of(null); 
@@ -64,20 +64,50 @@ export class UserFormComponent implements OnInit {
       []; 
 
     this.userForm = this.fb.group({
+      // --- DADOS DE LOGIN ---
       username: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
-      
       password: ['', passwordValidators],
       
-      isAdmin: [false]
+      // --- DADOS PESSOAIS (EXPANDIDO) ---
+      name: ['', Validators.required], // << ESSENCIAL: Resolve o erro de NOT NULL
+      phone: [''],
+      cpf: [''],
+      dateOfBirth: [''],
+      
+      // --- ENDEREÇO (EXPANDIDO) ---
+      cep: [''],
+      address: [''],
+      city: [''],
+      state: [''],
+      
+      // --- ADMIN/STATUS ---
+      isAdmin: [false],
+      status: [true] // Assumindo que status padrão é true
     });
   }
 
   loadUser(user: User): void {
+    // Mapeando a data para o formato de input (YYYY-MM-DD)
+    const dateOfBirthFormatted = user.dateOfBirth 
+      ? new Date(user.dateOfBirth).toISOString().substring(0, 10) 
+      : null;
+      
     this.userForm.patchValue({
       username: user.username,
       email: user.email,
-      isAdmin: user.isAdmin || false
+      isAdmin: user.isAdmin || false,
+
+      // NOVOS CAMPOS PREENCHIDOS PARA EDIÇÃO
+      name: user.name,
+      phone: user.phone,
+      cpf: user.cpf,
+      dateOfBirth: dateOfBirthFormatted,
+      cep: user.cep,
+      address: user.address,
+      city: user.city,
+      state: user.state,
+      status: user.status
     });
   }
 
@@ -93,6 +123,11 @@ export class UserFormComponent implements OnInit {
     }
     
     const payload = this.userForm.value as UserPayload;
+    
+    // Converte a data de volta para um objeto Date (ou string ISO)
+    if (payload.dateOfBirth) {
+        payload.dateOfBirth = new Date(payload.dateOfBirth);
+    }
     
     if (this.isEditMode && this.userId !== null) {
       if (!payload.password) {

@@ -3,18 +3,35 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, throwError, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 
-import { User } from '../models/user.model'; 
-import { environment } from '../../../environments/environment'; 
+import { User } from '../models/user.model';
+import { environment } from '../../../environments/environment';
 
 export interface UserFilter {
   username?: string;
 }
 
+// ATUALIZAÇÃO: UserPayload agora inclui todos os campos 
+// de perfil e endereço necessários para a criação/edição.
 export interface UserPayload {
-    username: string;
-    email: string;
-    password?: string;
-    isAdmin?: boolean; 
+  username: string;
+  email: string;
+  password?: string;
+
+  // Dados Pessoais
+  name: string; // Campo obrigatório
+  phone?: string;
+  cpf?: string;
+  dateOfBirth?: Date | string; // Permite string para o input[type=date]
+
+  // Endereço
+  cep?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+
+  // Acesso
+  isAdmin?: boolean;
+  status?: boolean;
 }
 
 @Injectable({
@@ -23,7 +40,7 @@ export interface UserPayload {
 export class UserService {
   private readonly USER_API_URL = `${environment.apiUrl}/Users`;
 
-  constructor(private http: HttpClient) { } 
+  constructor(private http: HttpClient) { }
 
   search(filters: UserFilter): Observable<User[]> {
     const username = filters.username;
@@ -33,8 +50,8 @@ export class UserService {
         map(user => user ? [user] : []),
         catchError(error => {
           if (error.status === 404) {
-             console.log(`Usuário '${username}' não encontrado.`);
-             return of([]);
+            console.log(`Usuário '${username}' não encontrado.`);
+            return of([]);
           }
           console.error('Erro ao buscar usuário no backend:', error);
           return throwError(() => new Error('Falha na comunicação com o servidor.'));
